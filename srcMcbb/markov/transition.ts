@@ -1,5 +1,5 @@
 import { type Curve, Knot, Line, Spline } from "@motion-canvas/2d";
-import { all, easeOutBounce, type SignalGenerator } from "@motion-canvas/core";
+import { all, easeInOutCubic, type SignalGenerator } from "@motion-canvas/core";
 import { type Anchor, anchorVectorMapping } from "../anchors";
 import type { MarkovState } from "./state";
 
@@ -9,6 +9,8 @@ export type MarkovTransitionOptions = Partial<{
   anchorEnd: Anchor;
   circleAround: Anchor;
 }>;
+
+const SMOOTHING_FACTOR = 0.1;
 
 export class MarkovTransition {
   public curve: Curve;
@@ -34,8 +36,8 @@ export class MarkovTransition {
     options.anchorSource ??= "right";
     options.anchorEnd ??= "left";
 
-    const sourceRadius = source.circle.height() / 2;
-    const targetRadius = target.circle.height() / 2;
+    const sourceRadius = (0.5 - SMOOTHING_FACTOR) * source.circle.height();
+    const targetRadius = 0.5 * target.circle.height();
     const sourcePoint = anchorVectorMapping[options.anchorSource]
       .scale(sourceRadius)
       .add(source.layout.position());
@@ -49,6 +51,7 @@ export class MarkovTransition {
       lineWidth: 4.0,
       endArrow: true,
       arrowSize: 12,
+      zIndex: -1,
     });
   }
 
@@ -102,7 +105,7 @@ export class MarkovTransition {
     const attrs = ["opacity", "end"] as const;
     const transitions: SignalGenerator<number, number>[] = [];
     for (const key of attrs) {
-      transitions.push(this.curve[key](0.0, 0.0).to(1.0, 1, easeOutBounce));
+      transitions.push(this.curve[key](0.0, 0.0).to(1.0, 1, easeInOutCubic));
     }
     return all(...transitions);
   }
