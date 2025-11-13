@@ -17,4 +17,8 @@ export default makeScene2D(function* (view) {
   const transition = new MarkovTransition(s1, s2);
   view.add(transition.curve);
   yield* transition.getTransitionDrawingAnimation();
+
+  const autoTransition = new MarkovTransition(s1, s1);
+  view.add(autoTransition.curve);
+  yield* autoTransition.getTransitionDrawingAnimation();
 });
