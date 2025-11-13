@@ -1,5 +1,5 @@
 import { makeScene2D } from "@motion-canvas/2d";
-import { Vector2 } from "@motion-canvas/core";
+import { all, Vector2 } from "@motion-canvas/core";
 import { MarkovState } from "../../srcMcbb/markov/state";
 import { MarkovTransition } from "../../srcMcbb/markov/transition";
 
@@ -14,11 +14,22 @@ export default makeScene2D(function* (view) {
   view.add(s1.layout);
   view.add(s2.layout);
 
-  const transition = new MarkovTransition(s1, s2);
-  view.add(transition.curve);
-  yield* transition.getTransitionDrawingAnimation();
-
+  const transition = new MarkovTransition(s1, s2, {
+    anchorSource: "topRight",
+    anchorEnd: "left",
+  });
   const autoTransition = new MarkovTransition(s1, s1);
-  view.add(autoTransition.curve);
-  yield* autoTransition.getTransitionDrawingAnimation();
+  const reverseTransition = new MarkovTransition(s2, s1, {
+    anchorSource: "bottomLeft",
+    anchorEnd: "right",
+  });
+
+  const allTransitions = [transition, autoTransition, reverseTransition];
+  allTransitions.forEach((a) => {
+    view.add(a.curve);
+  });
+  const transitionAnimations = allTransitions.map((a) =>
+    a.getTransitionDrawingAnimation(),
+  );
+  yield* all(...transitionAnimations);
 });

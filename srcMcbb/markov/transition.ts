@@ -28,10 +28,20 @@ export class MarkovTransition {
   private simpleTransition(
     source: MarkovState,
     target: MarkovState,
-    _options?: MarkovTransitionOptions,
+    options?: MarkovTransitionOptions,
   ) {
-    const sourcePoint = source.circle.right().add(source.layout.position());
-    const targetPoint = target.circle.left().add(target.layout.position());
+    options ??= {};
+    options.anchorSource ??= "right";
+    options.anchorEnd ??= "left";
+
+    const sourceRadius = source.circle.height() / 2;
+    const targetRadius = target.circle.height() / 2;
+    const sourcePoint = anchorVectorMapping[options.anchorSource]
+      .scale(sourceRadius)
+      .add(source.layout.position());
+    const targetPoint = anchorVectorMapping[options.anchorEnd]
+      .scale(targetRadius)
+      .add(target.layout.position());
 
     this.curve = new Line({
       points: [sourcePoint, targetPoint],
